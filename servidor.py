@@ -4,7 +4,6 @@
 import time
 import grpc
 from concurrent import futures
-
 import envios_pb2
 import envios_pb2_grpc
 
@@ -18,19 +17,20 @@ GUIAS = {
 class EnviosServicio(envios_pb2_grpc.EnviosServicer):
 
     def CotizarEnvio(self, request, context):
-        # UNARIO: regresa UNA caja con return
-        # TODO
-        # Si el código postal no tiene exactamente 5 dígitos, o el peso es 0 o menor: context.abort(grpc.StatusCode.INVALID_ARGUMENT, ...)
-        # Costo = 9900 + 2000 por cada kilo completo (peso_gramos // 1000 * 2000).
-        # Días = 1 si el código postal empieza con "28" (Colima); si no, 3.
-        context.abort(grpc.StatusCode.UNIMPLEMENTED, "Falta implementar CotizarEnvio")
+        cp = request.codigo_postal
+        if len(cp) != 5 or not cp.isdigit() or request.peso_gramos <= 0:
+            context.abort(grpc.StatusCode.INVALID_ARGUMENT,
+                          "Código postal de 5 dígitos y peso mayor a 0")
+        costo = 9900 + (request.peso_gramos // 1000) * 2000
+        dias = 1 if cp.startswith("28") else 3
+        return envios_pb2.Cotizacion(costo_centavos=costo, dias=dias)
 
     def Rastrear(self, request, context):
-        # STREAMING: entrega VARIAS cajas con yield
-        # TODO
-        # Si la guía no existe: context.abort(grpc.StatusCode.NOT_FOUND, ...)
-        # Si existe: por cada estado, espera 1 s y haz yield de un envios_pb2.EstadoEnvio.
-        context.abort(grpc.StatusCode.UNIMPLEMENTED, "Falta implementar Rastrear")
+        if request.guia not in GUIAS:
+            context.abort(grpc.StatusCode.NOT_FOUND, f"La guía {request.guia} no existe")
+        for estado, lugar in GUIAS[request.guia]:
+            time.sleep(1)
+            yield envios_pb2.EstadoEnvio(guia=request.guia, estado=estado, lugar=lugar)
 
 
 servidor = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
