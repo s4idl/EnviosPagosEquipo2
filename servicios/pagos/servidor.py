@@ -4,9 +4,11 @@
 import time
 import grpc
 from concurrent import futures
+
 import pagos_pb2
 import pagos_pb2_grpc
 
+# Datos de ejemplo (no hace falta base de datos)
 PEDIDOS = {
     "PED-100": (True, 1329800),
     "PED-101": (False, 89900),
@@ -17,17 +19,18 @@ PASOS = ["Validando datos", "Autorizando con el banco", "Cobro aprobado"]
 class PagosServicio(pagos_pb2_grpc.PagosServicer):
 
     def ConsultarPago(self, request, context):
-        if request.pedido not in PEDIDOS:
-            context.abort(grpc.StatusCode.NOT_FOUND, f"El pedido {request.pedido} no existe")
-        pagado, monto = PEDIDOS[request.pedido]
-        return pagos_pb2.EstadoPago(pedido=request.pedido, pagado=pagado, monto_centavos=monto)
+        # UNARIO: regresa UNA caja con return
+        # TODO
+        # Si el pedido no existe: context.abort(grpc.StatusCode.NOT_FOUND, ...)
+        # Si existe: regresa un pagos_pb2.EstadoPago con pedido, pagado y monto.
+        context.abort(grpc.StatusCode.UNIMPLEMENTED, "Falta implementar ConsultarPago")
 
     def SeguirCobro(self, request, context):
-        if request.monto_centavos <= 0:
-            context.abort(grpc.StatusCode.INVALID_ARGUMENT, "El monto debe ser mayor a 0")
-        for numero, paso in enumerate(PASOS, start=1):
-            time.sleep(1)
-            yield pagos_pb2.PasoCobro(numero=numero, paso=paso)
+        # STREAMING: entrega VARIAS cajas con yield
+        # TODO
+        # Si monto_centavos es 0 o menor: context.abort(grpc.StatusCode.INVALID_ARGUMENT, ...)
+        # Si no: por cada paso de PASOS, espera 1 s y haz yield de un pagos_pb2.PasoCobro (numero 1, 2, 3).
+        context.abort(grpc.StatusCode.UNIMPLEMENTED, "Falta implementar SeguirCobro")
 
 
 servidor = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
