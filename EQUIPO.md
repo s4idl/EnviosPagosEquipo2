@@ -1,7 +1,7 @@
 # Nuestro equipo
 
-- **Nuestro servicio:** Pagos · puerto 50056 · contrato `pagos.proto`
-- **Servicio que consumimos (vecino):** Carrito · puerto 50057 · contrato `carrito.proto`
+- **Nuestro servicio:** Envíos · puerto 50055 · contrato `envios.proto`
+- **Servicio que consumimos (vecino):** Pagos · puerto 50056 · contrato `pagos.proto`
 - **Repositorio del equipo vecino:** (pega aquí la URL)
 
 | Integrante | Matrícula | Rol |
